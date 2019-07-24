@@ -29,18 +29,18 @@
   <body>
     <div class="test-container"></div>
     <script src="../fluid-select.js"></script>
+    <script src="faker.js"></script>
     <script type="text/javascript">
-      for (var i = 0; i < 5; i++) {
-        var fluidSelect = new fluid.FluidSelect([
-          { value: '1234', label: 'Ashwin' },
-          { value: '2345', label: 'Kannan' },
-          { value: '2645', label: 'Gautham' },
-          { value: '2365', label: 'Anand' },
-          { value: '7345', label: 'Nithin' },
-          { value: '8345', label: 'KTP' },
-          { value: '2395', label: 'Lloyd' },
-          { value: '1349', label: 'Shankar' }
-        ]);
+      var values = [];
+
+      for (var i = 0; i < 100; i++) {
+        values.push({
+          value: faker.phone.phoneNumber(),
+          label: faker.name.findName()
+        });
+      }
+      for (var i = 0; i < 200; i++) {
+        var fluidSelect = new fluid.FluidSelect(values);
 
         document
           .querySelector('.test-container')
