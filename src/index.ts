@@ -1,193 +1,207 @@
-interface Option {
-  value: string;
-  label: string;
-  selected?: boolean;
-}
+namespace fluid {
+  interface Option {
+    value: string;
+    label: string;
+    selected?: boolean;
+  }
 
-interface SelectOptions {
-  [index: string]: Option;
-}
+  interface AttributeDescriptor {
+    [index: string]: string;
+  }
 
-interface AttributeDescriptor {
-  [index: string]: string;
-}
+  interface EventDescriptor {
+    [index: string]: (event: Event) => void;
+  }
 
-interface EventDescriptor {
-  [index: string]: (event: Event) => void;
-}
+  class Helpers {
+    static createElement(
+      type: string,
+      attributes?: AttributeDescriptor,
+      eventListeners?: EventDescriptor
+    ): HTMLElement {
+      const element = document.createElement(type);
 
-class FluidSelect {
-  values: SelectOptions = {};
-  element: HTMLDivElement;
-  displayContainer: HTMLDivElement;
-  searchInput: HTMLInputElement;
-  private dropdown: HTMLDivElement;
-  selectedValue: Option | null = null;
-  private selectListeners: ((
-    newVal: Option | null,
-    oldVal: Option | null
-  ) => void)[] = [];
-  private optionsContainer: HTMLDivElement;
-
-  constructor(initValues: Option[]) {
-    initValues.forEach(
-      (option: Option): void => {
-        this.values[option.value] = option;
+      if (attributes) {
+        for (let key in attributes) {
+          element.setAttribute(key, attributes[key]);
+        }
       }
-    );
 
-    this.element = FluidSelect.createElement('div', {
-      class: 'select__container',
-      tabindex: '0'
-    }) as HTMLDivElement;
-
-    this.displayContainer = FluidSelect.createElement('div', {
-      class: 'select__display'
-    }) as HTMLDivElement;
-
-    this.displayContainer.textContent = 'Choose a value';
-
-    this.element.appendChild(this.displayContainer);
-
-    this.element.addEventListener(
-      'click',
-      (event: Event): void => {
-        event.stopPropagation();
-        this.toggleOptions();
-        this.element.focus();
+      if (eventListeners) {
+        for (let event in eventListeners) {
+          element.addEventListener(event, eventListeners[event]);
+        }
       }
-    );
-    document.body.addEventListener(
-      'click',
-      (): void => {
-        this.hideOptions();
+
+      return element;
+    }
+
+    static findOption(options: Option[], value: string | null): Option | null {
+      if (!value) return null;
+
+      for (let option of options) {
+        if (option.value === value) {
+          return option;
+        }
       }
-    );
+      return null;
+    }
 
-    this.dropdown = FluidSelect.createElement('div', {
-      class: 'select__options hide'
-    }) as HTMLDivElement;
-    this.element.appendChild(this.dropdown);
-
-    const arrow = FluidSelect.createElement('span', {
-      class: 'select__arrow'
-    }) as HTMLSpanElement;
-    this.element.appendChild(arrow);
-
-    const resetBtn = FluidSelect.createElement('span', {
-      class: 'select__reset'
-    }) as HTMLSpanElement;
-    this.element.appendChild(resetBtn);
-    resetBtn.textContent = '×';
-    resetBtn.addEventListener(
-      'click',
-      (): void => {
-        this.setValue(null);
+    static emptyElement(el: HTMLElement) {
+      while (el.firstChild) {
+        el.removeChild(el.firstChild);
       }
-    );
+    }
+  }
 
-    this.searchInput = FluidSelect.createElement('input', {
-      class: 'select__input'
-    }) as HTMLInputElement;
-    this.searchInput.addEventListener(
-      'click',
-      (event: Event): void => {
-        event.stopPropagation();
-      }
-    );
+  export class FluidSelect {
+    element: HTMLDivElement;
+    displayContainer: HTMLDivElement;
+    searchInput: HTMLInputElement;
+    private dropdown: HTMLDivElement;
+    selectedValue: Option | null = null;
+    private selectListeners: ((
+      newVal: Option | null,
+      oldVal: Option | null
+    ) => void)[] = [];
+    private optionsContainer: HTMLDivElement;
 
-    const inputContainer = FluidSelect.createElement('div', {
-      class: 'select__input-container'
-    }) as HTMLDivElement;
-    inputContainer.appendChild(this.searchInput);
+    constructor(public values: Option[]) {
+      this.element = Helpers.createElement('div', {
+        class: 'select__container',
+        tabindex: '0'
+      }) as HTMLDivElement;
 
-    this.dropdown.appendChild(inputContainer);
+      this.displayContainer = Helpers.createElement('div', {
+        class: 'select__display'
+      }) as HTMLDivElement;
 
-    this.optionsContainer = FluidSelect.createElement('div', {
-      class: 'select__options-container'
-    }) as HTMLDivElement;
-    this.dropdown.appendChild(this.optionsContainer);
+      this.displayContainer.textContent = 'Choose a value';
 
-    const { values } = this;
+      this.element.appendChild(this.displayContainer);
 
-    for (let value in values) {
-      const newDiv = FluidSelect.createElement(
-        'div',
-        {
-          ['class']: 'select__option'
-        },
-        {
-          click: () => {
-            this.setValue(value);
-          }
+      this.element.addEventListener(
+        'click',
+        (event: Event): void => {
+          event.stopPropagation();
+          this.toggleOptions();
+          this.element.focus();
+        }
+      );
+      document.body.addEventListener(
+        'click',
+        (): void => {
+          this.hideOptions();
         }
       );
 
-      newDiv.textContent = values[value].label;
+      this.dropdown = Helpers.createElement('div', {
+        class: 'select__options hide'
+      }) as HTMLDivElement;
+      this.element.appendChild(this.dropdown);
 
-      this.optionsContainer.appendChild(newDiv);
+      const arrow = Helpers.createElement('span', {
+        class: 'select__arrow'
+      }) as HTMLSpanElement;
+      this.element.appendChild(arrow);
+
+      const resetBtn = Helpers.createElement('span', {
+        class: 'select__reset'
+      }) as HTMLSpanElement;
+      this.element.appendChild(resetBtn);
+      resetBtn.textContent = '×';
+      resetBtn.addEventListener(
+        'click',
+        (): void => {
+          this.setSelectedValue(null);
+        }
+      );
+
+      this.searchInput = Helpers.createElement('input', {
+        class: 'select__input'
+      }) as HTMLInputElement;
+      this.searchInput.addEventListener(
+        'click',
+        (event: Event): void => {
+          event.stopPropagation();
+        }
+      );
+
+      const inputContainer = Helpers.createElement('div', {
+        class: 'select__input-container'
+      }) as HTMLDivElement;
+      inputContainer.appendChild(this.searchInput);
+
+      this.dropdown.appendChild(inputContainer);
+
+      this.optionsContainer = Helpers.createElement('div', {
+        class: 'select__options-container'
+      }) as HTMLDivElement;
+      this.dropdown.appendChild(this.optionsContainer);
+
+      this.setOptions(this.values);
     }
-  }
 
-  static createElement(
-    type: string,
-    attributes?: AttributeDescriptor,
-    eventListeners?: EventDescriptor
-  ): HTMLElement {
-    const element = document.createElement(type);
+    setOptions(options: Option[]) {
+      Helpers.emptyElement(this.optionsContainer);
 
-    if (attributes) {
-      for (let key in attributes) {
-        element.setAttribute(key, attributes[key]);
+      for (let option of options) {
+        const newDiv = Helpers.createElement(
+          'div',
+          {
+            ['class']: 'select__option'
+          },
+          {
+            click: () => {
+              this.setSelectedValue(option.value);
+            }
+          }
+        );
+
+        newDiv.textContent = option.label;
+
+        this.optionsContainer.appendChild(newDiv);
       }
     }
 
-    if (eventListeners) {
-      for (let event in eventListeners) {
-        element.addEventListener(event, eventListeners[event]);
+    showOptions(): void {
+      this.dropdown.classList.remove('hide');
+    }
+
+    hideOptions(): void {
+      this.dropdown.classList.add('hide');
+    }
+
+    toggleOptions(): void {
+      this.dropdown.classList.toggle('hide');
+    }
+
+    setSelectedValue(value: string | null): void {
+      const oldVal = this.selectedValue;
+      let newVal: Option | null = Helpers.findOption(this.values, value);
+
+      if (oldVal === value) return;
+
+      if (oldVal) {
+        oldVal.selected = false;
+      }
+
+      if (newVal) {
+        newVal.selected = true;
+        this.displayContainer.textContent = newVal.label;
+      } else {
+        this.displayContainer.textContent = 'Choose a value';
+      }
+
+      this.selectedValue = newVal;
+
+      for (let cb of this.selectListeners) {
+        cb(newVal, oldVal);
       }
     }
 
-    return element;
-  }
-
-  showOptions(): void {
-    this.dropdown.classList.remove('hide');
-  }
-
-  hideOptions(): void {
-    this.dropdown.classList.add('hide');
-  }
-
-  toggleOptions(): void {
-    this.dropdown.classList.toggle('hide');
-  }
-
-  setValue(value: string | null): void {
-    const oldVal = this.selectedValue;
-    const newVal = value ? this.values[value] : null;
-
-    if (oldVal === newVal) return;
-
-    if (oldVal) {
-      this.values[oldVal.value].selected = false;
+    onSelect(fn: (newVal: Option | null, oldVal: Option | null) => void): void {
+      this.selectListeners.push(fn);
     }
-
-    if (value) {
-      this.values[value].selected = true;
-      this.displayContainer.textContent = this.values[value].label;
-    } else {
-      this.displayContainer.textContent = 'Choose a value';
-    }
-
-    this.selectedValue = newVal;
-
-    for (let cb of this.selectListeners) {
-      cb(newVal, oldVal);
-    }
-  }
-
-  onSelect(fn: (newVal: Option | null, oldVal: Option | null) => void): void {
-    this.selectListeners.push(fn);
   }
 }
