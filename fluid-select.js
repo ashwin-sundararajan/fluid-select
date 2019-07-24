@@ -1,7 +1,6 @@
 "use strict";
 var FluidSelect = /** @class */ (function () {
     function FluidSelect(initValues) {
-        var _a, _b, _c, _d, _e;
         var _this = this;
         this.values = {};
         this.selectedValue = null;
@@ -9,19 +8,15 @@ var FluidSelect = /** @class */ (function () {
         initValues.forEach(function (option) {
             _this.values[option.value] = option;
         });
-        this.element = FluidSelect.createElement('div', (_a = {},
-            _a['class'] = 'select__container',
-            _a.tabindex = '0',
-            _a));
-        this.displayContainer = FluidSelect.createElement('div', (_b = {},
-            _b['class'] = 'select__display',
-            _b));
+        this.element = FluidSelect.createElement('div', {
+            class: 'select__container',
+            tabindex: '0'
+        });
+        this.displayContainer = FluidSelect.createElement('div', {
+            class: 'select__display'
+        });
         this.displayContainer.textContent = 'Choose a value';
         this.element.appendChild(this.displayContainer);
-        this.optionContainer = FluidSelect.createElement('div', (_c = {},
-            _c['class'] = 'select__options hide',
-            _c));
-        this.element.appendChild(this.optionContainer);
         this.element.addEventListener('click', function (event) {
             event.stopPropagation();
             _this.toggleOptions();
@@ -30,17 +25,37 @@ var FluidSelect = /** @class */ (function () {
         document.body.addEventListener('click', function () {
             _this.hideOptions();
         });
-        this.searchInput = FluidSelect.createElement('input', (_d = {},
-            _d['class'] = 'select__input',
-            _d));
+        this.dropdown = FluidSelect.createElement('div', {
+            class: 'select__options hide'
+        });
+        this.element.appendChild(this.dropdown);
+        var arrow = FluidSelect.createElement('span', {
+            class: 'select__arrow'
+        });
+        this.element.appendChild(arrow);
+        var resetBtn = FluidSelect.createElement('span', {
+            class: 'select__reset'
+        });
+        this.element.appendChild(resetBtn);
+        resetBtn.textContent = '×';
+        resetBtn.addEventListener('click', function () {
+            _this.setValue(null);
+        });
+        this.searchInput = FluidSelect.createElement('input', {
+            class: 'select__input'
+        });
         this.searchInput.addEventListener('click', function (event) {
             event.stopPropagation();
         });
-        var inputContainer = FluidSelect.createElement('div', (_e = {},
-            _e['class'] = 'select__input-container',
-            _e));
+        var inputContainer = FluidSelect.createElement('div', {
+            class: 'select__input-container'
+        });
         inputContainer.appendChild(this.searchInput);
-        this.optionContainer.appendChild(inputContainer);
+        this.dropdown.appendChild(inputContainer);
+        this.optionsContainer = FluidSelect.createElement('div', {
+            class: 'select__options-container'
+        });
+        this.dropdown.appendChild(this.optionsContainer);
         var values = this.values;
         var _loop_1 = function (value) {
             var _a;
@@ -52,7 +67,7 @@ var FluidSelect = /** @class */ (function () {
                 }
             });
             newDiv.textContent = values[value].label;
-            this_1.optionContainer.appendChild(newDiv);
+            this_1.optionsContainer.appendChild(newDiv);
         };
         var this_1 = this;
         for (var value in values) {
@@ -74,25 +89,30 @@ var FluidSelect = /** @class */ (function () {
         return element;
     };
     FluidSelect.prototype.showOptions = function () {
-        this.optionContainer.classList.remove('hide');
+        this.dropdown.classList.remove('hide');
     };
     FluidSelect.prototype.hideOptions = function () {
-        this.optionContainer.classList.add('hide');
+        this.dropdown.classList.add('hide');
     };
     FluidSelect.prototype.toggleOptions = function () {
-        this.optionContainer.classList.toggle('hide');
+        this.dropdown.classList.toggle('hide');
     };
     FluidSelect.prototype.setValue = function (value) {
         var oldVal = this.selectedValue;
-        var newVal = this.values[value];
+        var newVal = value ? this.values[value] : null;
         if (oldVal === newVal)
             return;
         if (oldVal) {
             this.values[oldVal.value].selected = false;
         }
-        this.values[value].selected = true;
+        if (value) {
+            this.values[value].selected = true;
+            this.displayContainer.textContent = this.values[value].label;
+        }
+        else {
+            this.displayContainer.textContent = 'Choose a value';
+        }
         this.selectedValue = newVal;
-        this.displayContainer.textContent = this.selectedValue.label;
         for (var _i = 0, _a = this.selectListeners; _i < _a.length; _i++) {
             var cb = _a[_i];
             cb(newVal, oldVal);

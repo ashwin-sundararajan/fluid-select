@@ -21,9 +21,13 @@ class FluidSelect {
   element: HTMLDivElement;
   displayContainer: HTMLDivElement;
   searchInput: HTMLInputElement;
-  private optionContainer: HTMLDivElement;
+  private dropdown: HTMLDivElement;
   selectedValue: Option | null = null;
-  selectListeners: ((newVal: Option, oldVal: Option | null) => void)[] = [];
+  private selectListeners: ((
+    newVal: Option | null,
+    oldVal: Option | null
+  ) => void)[] = [];
+  private optionsContainer: HTMLDivElement;
 
   constructor(initValues: Option[]) {
     initValues.forEach(
@@ -33,23 +37,18 @@ class FluidSelect {
     );
 
     this.element = FluidSelect.createElement('div', {
-      ['class']: 'select__container',
+      class: 'select__container',
       tabindex: '0'
     }) as HTMLDivElement;
 
     this.displayContainer = FluidSelect.createElement('div', {
-      ['class']: 'select__display'
+      class: 'select__display'
     }) as HTMLDivElement;
 
     this.displayContainer.textContent = 'Choose a value';
 
     this.element.appendChild(this.displayContainer);
 
-    this.optionContainer = FluidSelect.createElement('div', {
-      ['class']: 'select__options hide'
-    }) as HTMLDivElement;
-
-    this.element.appendChild(this.optionContainer);
     this.element.addEventListener(
       'click',
       (event: Event): void => {
@@ -65,8 +64,30 @@ class FluidSelect {
       }
     );
 
+    this.dropdown = FluidSelect.createElement('div', {
+      class: 'select__options hide'
+    }) as HTMLDivElement;
+    this.element.appendChild(this.dropdown);
+
+    const arrow = FluidSelect.createElement('span', {
+      class: 'select__arrow'
+    }) as HTMLSpanElement;
+    this.element.appendChild(arrow);
+
+    const resetBtn = FluidSelect.createElement('span', {
+      class: 'select__reset'
+    }) as HTMLSpanElement;
+    this.element.appendChild(resetBtn);
+    resetBtn.textContent = '×';
+    resetBtn.addEventListener(
+      'click',
+      (): void => {
+        this.setValue(null);
+      }
+    );
+
     this.searchInput = FluidSelect.createElement('input', {
-      ['class']: 'select__input'
+      class: 'select__input'
     }) as HTMLInputElement;
     this.searchInput.addEventListener(
       'click',
@@ -76,11 +97,16 @@ class FluidSelect {
     );
 
     const inputContainer = FluidSelect.createElement('div', {
-      ['class']: 'select__input-container'
+      class: 'select__input-container'
     }) as HTMLDivElement;
     inputContainer.appendChild(this.searchInput);
 
-    this.optionContainer.appendChild(inputContainer);
+    this.dropdown.appendChild(inputContainer);
+
+    this.optionsContainer = FluidSelect.createElement('div', {
+      class: 'select__options-container'
+    }) as HTMLDivElement;
+    this.dropdown.appendChild(this.optionsContainer);
 
     const { values } = this;
 
@@ -99,7 +125,7 @@ class FluidSelect {
 
       newDiv.textContent = values[value].label;
 
-      this.optionContainer.appendChild(newDiv);
+      this.optionsContainer.appendChild(newDiv);
     }
   }
 
@@ -126,20 +152,20 @@ class FluidSelect {
   }
 
   showOptions(): void {
-    this.optionContainer.classList.remove('hide');
+    this.dropdown.classList.remove('hide');
   }
 
   hideOptions(): void {
-    this.optionContainer.classList.add('hide');
+    this.dropdown.classList.add('hide');
   }
 
   toggleOptions(): void {
-    this.optionContainer.classList.toggle('hide');
+    this.dropdown.classList.toggle('hide');
   }
 
-  setValue(value: string): void {
+  setValue(value: string | null): void {
     const oldVal = this.selectedValue;
-    const newVal = this.values[value];
+    const newVal = value ? this.values[value] : null;
 
     if (oldVal === newVal) return;
 
@@ -147,16 +173,21 @@ class FluidSelect {
       this.values[oldVal.value].selected = false;
     }
 
-    this.values[value].selected = true;
+    if (value) {
+      this.values[value].selected = true;
+      this.displayContainer.textContent = this.values[value].label;
+    } else {
+      this.displayContainer.textContent = 'Choose a value';
+    }
+
     this.selectedValue = newVal;
-    this.displayContainer.textContent = this.selectedValue.label;
 
     for (let cb of this.selectListeners) {
       cb(newVal, oldVal);
     }
   }
 
-  onSelect(fn: (newVal: Option, oldVal: Option | null) => void): void {
+  onSelect(fn: (newVal: Option | null, oldVal: Option | null) => void): void {
     this.selectListeners.push(fn);
   }
 }
