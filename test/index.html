@@ -21,28 +21,33 @@
       max-width: 450px;
       margin: 50px auto;
     }
+    .select__container {
+      margin-bottom: 30px;
+    }
   </style>
   <link rel="stylesheet" href="../themes/theme-freshsales.css" />
   <body>
     <div class="test-container"></div>
     <script src="../fluid-select.js"></script>
     <script type="text/javascript">
-      var fluidSelect = new fluid.FluidSelect([
-        { value: '1234', label: 'Ashwin' },
-        { value: '2345', label: 'Kannan' },
-        { value: '2645', label: 'Gautham' },
-        { value: '2365', label: 'Anand' },
-        { value: '7345', label: 'Nithin' },
-        { value: '8345', label: 'KTP' },
-        { value: '2395', label: 'Lloyd' },
-        { value: '1349', label: 'Shankar' }
-      ]);
+      for (var i = 0; i < 5; i++) {
+        var fluidSelect = new fluid.FluidSelect([
+          { value: '1234', label: 'Ashwin' },
+          { value: '2345', label: 'Kannan' },
+          { value: '2645', label: 'Gautham' },
+          { value: '2365', label: 'Anand' },
+          { value: '7345', label: 'Nithin' },
+          { value: '8345', label: 'KTP' },
+          { value: '2395', label: 'Lloyd' },
+          { value: '1349', label: 'Shankar' }
+        ]);
 
-      document
-        .querySelector('.test-container')
-        .appendChild(fluidSelect.element);
+        document
+          .querySelector('.test-container')
+          .appendChild(fluidSelect.element);
 
-      fluidSelect.onSelect(console.log);
+        fluidSelect.onSelect(console.log);
+      }
     </script>
   </body>
 </html>

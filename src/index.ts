@@ -52,6 +52,16 @@ namespace fluid {
         el.removeChild(el.firstChild);
       }
     }
+
+    static hideAllElements(selector: string, except?: HTMLElement) {
+      document.querySelectorAll(selector).forEach(
+        (element): void => {
+          if (element !== except) {
+            element.classList.add('hide');
+          }
+        }
+      );
+    }
   }
 
   export class FluidSelect {
@@ -86,9 +96,10 @@ namespace fluid {
           event.stopPropagation();
           this.toggleOptions();
           this.element.focus();
+          Helpers.hideAllElements('.select__options', this.dropdown);
         }
       );
-      document.body.addEventListener(
+      document.addEventListener(
         'click',
         (): void => {
           this.hideOptions();
@@ -126,6 +137,23 @@ namespace fluid {
           event.stopPropagation();
         }
       );
+      this.searchInput.addEventListener(
+        'input',
+        (): void => {
+          const searchString = this.searchInput.value;
+
+          const valuesToDisplay = this.values.filter(
+            (option): boolean => {
+              return (
+                option.label
+                  .toLowerCase()
+                  .indexOf(searchString.toLowerCase()) !== -1
+              );
+            }
+          );
+          this.setOptions(valuesToDisplay);
+        }
+      );
 
       const inputContainer = Helpers.createElement('div', {
         class: 'select__input-container'
@@ -146,6 +174,8 @@ namespace fluid {
       Helpers.emptyElement(this.optionsContainer);
 
       for (let option of options) {
+        if (option.selected) continue;
+
         const newDiv = Helpers.createElement(
           'div',
           {
@@ -189,8 +219,10 @@ namespace fluid {
       if (newVal) {
         newVal.selected = true;
         this.displayContainer.textContent = newVal.label;
+        this.element.dataset.value = newVal.value;
       } else {
         this.displayContainer.textContent = 'Choose a value';
+        delete this.element.dataset.value;
       }
 
       this.selectedValue = newVal;

@@ -34,6 +34,13 @@ var fluid;
                 el.removeChild(el.firstChild);
             }
         };
+        Helpers.hideAllElements = function (selector, except) {
+            document.querySelectorAll(selector).forEach(function (element) {
+                if (element !== except) {
+                    element.classList.add('hide');
+                }
+            });
+        };
         return Helpers;
     }());
     var FluidSelect = /** @class */ (function () {
@@ -55,8 +62,9 @@ var fluid;
                 event.stopPropagation();
                 _this.toggleOptions();
                 _this.element.focus();
+                Helpers.hideAllElements('.select__options', _this.dropdown);
             });
-            document.body.addEventListener('click', function () {
+            document.addEventListener('click', function () {
                 _this.hideOptions();
             });
             this.dropdown = Helpers.createElement('div', {
@@ -81,6 +89,15 @@ var fluid;
             this.searchInput.addEventListener('click', function (event) {
                 event.stopPropagation();
             });
+            this.searchInput.addEventListener('input', function () {
+                var searchString = _this.searchInput.value;
+                var valuesToDisplay = _this.values.filter(function (option) {
+                    return (option.label
+                        .toLowerCase()
+                        .indexOf(searchString.toLowerCase()) !== -1);
+                });
+                _this.setOptions(valuesToDisplay);
+            });
             var inputContainer = Helpers.createElement('div', {
                 class: 'select__input-container'
             });
@@ -97,6 +114,8 @@ var fluid;
             Helpers.emptyElement(this.optionsContainer);
             var _loop_1 = function (option) {
                 var _a;
+                if (option.selected)
+                    return "continue";
                 var newDiv = Helpers.createElement('div', (_a = {},
                     _a['class'] = 'select__option',
                     _a), {
@@ -133,9 +152,11 @@ var fluid;
             if (newVal) {
                 newVal.selected = true;
                 this.displayContainer.textContent = newVal.label;
+                this.element.dataset.value = newVal.value;
             }
             else {
                 this.displayContainer.textContent = 'Choose a value';
+                delete this.element.dataset.value;
             }
             this.selectedValue = newVal;
             for (var _i = 0, _a = this.selectListeners; _i < _a.length; _i++) {
