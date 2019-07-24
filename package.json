@@ -1,0 +1,23 @@
+{
+  "name": "fluid-select",
+  "version": "1.0.0",
+  "description": "A light-weight JS library to create and manage dropdown menus with searchable input.",
+  "main": "fluid-select.js",
+  "scripts": {
+    "start": "tsc -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ashwin-sundararajan/fluid-select.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ashwin-sundararajan/fluid-select/issues"
+  },
+  "homepage": "https://github.com/ashwin-sundararajan/fluid-select#readme",
+  "devDependencies": {
+    "typescript": "^3.5.3"
+  }
+}
