@@ -23,6 +23,7 @@ class FluidSelect {
   searchInput: HTMLInputElement;
   private optionContainer: HTMLDivElement;
   selectedValue: Option | null = null;
+  selectListeners: ((newVal: Option, oldVal: Option | null) => void)[] = [];
 
   constructor(initValues: Option[]) {
     initValues.forEach(
@@ -32,7 +33,8 @@ class FluidSelect {
     );
 
     this.element = FluidSelect.createElement('div', {
-      ['class']: 'select__container'
+      ['class']: 'select__container',
+      tabindex: '0'
     }) as HTMLDivElement;
 
     this.displayContainer = FluidSelect.createElement('div', {
@@ -43,14 +45,42 @@ class FluidSelect {
 
     this.element.appendChild(this.displayContainer);
 
-    this.optionContainer = FluidSelect.createElement('div') as HTMLDivElement;
+    this.optionContainer = FluidSelect.createElement('div', {
+      ['class']: 'select__options hide'
+    }) as HTMLDivElement;
+
     this.element.appendChild(this.optionContainer);
+    this.element.addEventListener(
+      'click',
+      (event: Event): void => {
+        event.stopPropagation();
+        this.toggleOptions();
+        this.element.focus();
+      }
+    );
+    document.body.addEventListener(
+      'click',
+      (): void => {
+        this.hideOptions();
+      }
+    );
 
     this.searchInput = FluidSelect.createElement('input', {
       ['class']: 'select__input'
     }) as HTMLInputElement;
+    this.searchInput.addEventListener(
+      'click',
+      (event: Event): void => {
+        event.stopPropagation();
+      }
+    );
 
-    this.optionContainer.appendChild(this.searchInput);
+    const inputContainer = FluidSelect.createElement('div', {
+      ['class']: 'select__input-container'
+    }) as HTMLDivElement;
+    inputContainer.appendChild(this.searchInput);
+
+    this.optionContainer.appendChild(inputContainer);
 
     const { values } = this;
 
@@ -62,11 +92,6 @@ class FluidSelect {
         },
         {
           click: () => {
-            if (this.selectedValue) {
-              values[this.selectedValue.value].selected = false;
-            }
-
-            values[value].selected = true;
             this.setValue(value);
           }
         }
@@ -91,18 +116,47 @@ class FluidSelect {
       }
     }
 
+    if (eventListeners) {
+      for (let event in eventListeners) {
+        element.addEventListener(event, eventListeners[event]);
+      }
+    }
+
     return element;
   }
 
-  showOptions() {
+  showOptions(): void {
     this.optionContainer.classList.remove('hide');
   }
 
-  hideOptions() {
+  hideOptions(): void {
     this.optionContainer.classList.add('hide');
   }
 
-  setValue(value: string) {
-    this.selectedValue = this.values[value];
+  toggleOptions(): void {
+    this.optionContainer.classList.toggle('hide');
+  }
+
+  setValue(value: string): void {
+    const oldVal = this.selectedValue;
+    const newVal = this.values[value];
+
+    if (oldVal === newVal) return;
+
+    if (oldVal) {
+      this.values[oldVal.value].selected = false;
+    }
+
+    this.values[value].selected = true;
+    this.selectedValue = newVal;
+    this.displayContainer.textContent = this.selectedValue.label;
+
+    for (let cb of this.selectListeners) {
+      cb(newVal, oldVal);
+    }
+  }
+
+  onSelect(fn: (newVal: Option, oldVal: Option | null) => void): void {
+    this.selectListeners.push(fn);
   }
 }
