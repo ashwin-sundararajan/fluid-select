@@ -172,10 +172,9 @@ namespace fluid {
 
     setOptions(options: Option[]) {
       Helpers.emptyElement(this.optionsContainer);
-
+      const fragment = document.createDocumentFragment();
       for (let option of options) {
         if (option.selected) continue;
-
         const newDiv = Helpers.createElement(
           'div',
           {
@@ -190,12 +189,14 @@ namespace fluid {
 
         newDiv.textContent = option.label;
 
-        this.optionsContainer.appendChild(newDiv);
+        fragment.appendChild(newDiv);
       }
+      this.optionsContainer.appendChild(fragment);
     }
 
     showOptions(): void {
       this.dropdown.classList.remove('hide');
+      this.setOptions(this.values);
     }
 
     hideOptions(): void {
@@ -203,7 +204,11 @@ namespace fluid {
     }
 
     toggleOptions(): void {
-      this.dropdown.classList.toggle('hide');
+      if (this.dropdown.classList.contains('hide')) {
+        this.showOptions();
+      } else {
+        this.hideOptions();
+      }
     }
 
     setSelectedValue(value: string | null): void {

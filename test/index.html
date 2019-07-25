@@ -33,13 +33,13 @@
     <script type="text/javascript">
       var values = [];
 
-      for (var i = 0; i < 100; i++) {
+      for (var i = 0; i < 500; i++) {
         values.push({
           value: faker.phone.phoneNumber(),
           label: faker.name.findName()
         });
       }
-      for (var i = 0; i < 200; i++) {
+      for (var i = 0; i < 50; i++) {
         var fluidSelect = new fluid.FluidSelect(values);
 
         document

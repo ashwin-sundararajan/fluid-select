@@ -112,6 +112,7 @@ var fluid;
         FluidSelect.prototype.setOptions = function (options) {
             var _this = this;
             Helpers.emptyElement(this.optionsContainer);
+            var fragment = document.createDocumentFragment();
             var _loop_1 = function (option) {
                 var _a;
                 if (option.selected)
@@ -124,22 +125,28 @@ var fluid;
                     }
                 });
                 newDiv.textContent = option.label;
-                this_1.optionsContainer.appendChild(newDiv);
+                fragment.appendChild(newDiv);
             };
-            var this_1 = this;
             for (var _i = 0, options_2 = options; _i < options_2.length; _i++) {
                 var option = options_2[_i];
                 _loop_1(option);
             }
+            this.optionsContainer.appendChild(fragment);
         };
         FluidSelect.prototype.showOptions = function () {
             this.dropdown.classList.remove('hide');
+            this.setOptions(this.values);
         };
         FluidSelect.prototype.hideOptions = function () {
             this.dropdown.classList.add('hide');
         };
         FluidSelect.prototype.toggleOptions = function () {
-            this.dropdown.classList.toggle('hide');
+            if (this.dropdown.classList.contains('hide')) {
+                this.showOptions();
+            }
+            else {
+                this.hideOptions();
+            }
         };
         FluidSelect.prototype.setSelectedValue = function (value) {
             var oldVal = this.selectedValue;
